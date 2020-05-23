@@ -12,10 +12,6 @@ def jk(_y, k):
 
 def new_f(n):
     def f(_y, _x):
-        # print('---------------')
-        # print('_y in rhp: ', _y)
-        # print('_x in rhp: ', _x)
-        # print('---------------')
         rhp = np.zeros_like(_y)
         for i in range(0, n):
             if i == 0:
@@ -32,14 +28,10 @@ def new_f(n):
     return f
 
 
+
+
+
 def backward_differentiation_formula(y):
-    # k = 1
-    # y = [y0]
-    # while k < amount_of_points:
-    #     y.append(iteration(y[len(y) - 1], h, x[k]))
-    #     k += 1
-    # print("Start approximate values: ", y)
-    # y_fpi = y.copy()
     k = 2
     while k < amount_of_points - 2:
         y[k+1] = (6/11)*(3*y[k]-(3/2)*y[k-1]+(1/3)*y[k-2]+h*f(y[k+1], x[k+1]))
@@ -57,14 +49,14 @@ def backward_differentiation_formula(y):
 
 fig, ax = plt.subplots()
 amount_of_points = 101
-size_of_y = 4
+size_of_y = 300
 f = new_f(size_of_y)
 x_min = 0
 # x_max = 10**15
 x_max = 10
 x = np.linspace(x_min, x_max, amount_of_points)
 h = (x_max - x_min)/(amount_of_points-1)
-y0 = 0
+y0 = 7.5
 print("X[] = ", x)
 y_initial_values = np.zeros([size_of_y])
 y_initial_values[0] = 7.5
@@ -87,46 +79,4 @@ plt.grid()
 plt.legend(loc='best');
 plt.show()
 print("Right-hand-parts: ", f)
-
-
-# # xjpo - Xj+1
-# # xkpo - Xk+1
-# def iteration(yj, h, xjpo):
-#     eps = 1
-#     yk = yj
-#     while eps > 0.0001:
-#         ykpo = yj + h * f(xjpo, yk)
-#         # print("eps:", eps)
-#         eps = ykpo - yk
-#         yk = ykpo
-#     return yk
-#
-#
-# # def bdf3(p, righthandside, y0):
-# #
-#
-
-#
-#
-# fig, ax = plt.subplots()
-# amount_of_points = 101
-# x_min = -5
-# x_max = 5
-# x = np.linspace(x_min, x_max, amount_of_points)
-# h = (x_max - x_min)/(amount_of_points-1)
-# y0 = 0.95892427466
-# y, y_fpi = backward_differentiation_formula(amount_of_points, h, x, y0)
-# print("Y[] = ", y)
-# print("X[] = ", x)
-# # y_exact = [y0]
-# # i = 1
-# # while i < amount_of_points:
-# #     y_exact.append(desired_func(x[i]))
-# #     i += 1
-# ax.plot(x, y, color='red', label='BDF')
-# ax.plot(x, y_fpi, color='green', label='Fixed-point-iteration')
-# # ax.plot(x, y_exact, color='blue', label='Exact solution')
-# plt.grid()
-# plt.legend(loc='best');
-# plt.show()
 
