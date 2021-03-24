@@ -117,9 +117,9 @@ def mininize(_a):
     return _a - l_min*gradient
 
 
-def norm2k(_a):
+def norm(_a):
     _sum = 0
-    for i in range(0, 2*k):
+    for i in range(0, size_of_y):
         _sum += _a[i]**2
     return math.sqrt(_sum)
 
@@ -161,12 +161,12 @@ while step < amount_of_points-4:
     alphaAndBeta = [np.array([1, 1, 1, 1, 1, 1]), grad_step(np.array([1, 1, 1, 1, 1, 1]))]
     norms_dif = []
     v = V()
-    norm_dif = norm2k(alphaAndBeta[-2] - alphaAndBeta[-1])
+    norm_dif = norm(alphaAndBeta[-2].dot(v) - alphaAndBeta[-1].dot(v))
     while norm_dif > eps:
         norms_dif.append(norm_dif)
         print("norm :", norms_dif[-1])
         alphaAndBeta.append(grad_step(alphaAndBeta[-1]))
-        norm_dif = norm2k(alphaAndBeta[-2] - alphaAndBeta[-1])
+        norm_dif = norm(alphaAndBeta[-2].dot(v) - alphaAndBeta[-1].dot(v))
         if len(norms_dif) == 20:
             break
     points.append(alphaAndBeta[-1])
