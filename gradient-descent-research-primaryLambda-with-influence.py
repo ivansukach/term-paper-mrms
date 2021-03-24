@@ -37,8 +37,8 @@ def x_template(_k):
     return s_template
 
 
-x_template_str = x_template(3)
-print('x_template for k = ', 3, ' : ', x_template_str)
+x_template_str = x_template(k)
+print('x_template for k = ', k, ' : ', x_template_str)
 r_template_str = x_template_str
 for j in range(0, k):
     r_template_str = r_template_str.replace("alpha"+str(j),
@@ -70,24 +70,21 @@ def mininize(_a):
     gradient = gradient.transpose()
     lambda_vector = []
     norms = []
-    sumNorms = 0
     for i in range(0, size_of_y):
         l_min = minimize_scalar(lambda l: math.fabs(minimizedFunction(_a - l * gradient[i])[i])).x
         lambda_vector.append(l_min)
         nrm = math.fabs(minimizedFunction(_a - l_min * gradient[i])[i])
-        sumNorms += nrm
         norms.append(nrm)
     print("lambda_vector:", lambda_vector)
     print("norms:", norms)
-    print("sumNorms:", sumNorms)
     print("value of minimizedFunc before minimization:", minimizedFunction(_a))
     _result = _a
     koef = 0
     for nrm in norms:
-        koef += sumNorms/nrm
+        koef += 1./nrm
     for i in range(0, size_of_y):
-        print("part of influence:", sumNorms/norms[i]/koef)
-        _result = _result - sumNorms/norms[i]/koef*lambda_vector[i] * gradient[i]
+        print("part of influence:", 1./(norms[i]*koef))
+        _result = _result - 1./(norms[i]*koef)*lambda_vector[i] * gradient[i]
     print("value of minimizedFunc after minimization:", minimizedFunction(_result))
     print("point after minimization:", _result)
     return _result

@@ -36,20 +36,17 @@ def backward_differentiation_formula(y):
     while k < amount_of_points - 2:
         y[k+1] = (6/11)*(3*y[k]-(3/2)*y[k-1]+(1/3)*y[k-2]+h*f(y[k+1], x[k+1]))
         x_temp = x[k+1:k+3]
-        # print("X_TEMP: ", x_temp)
         new_yk = np.array([odeint(f, y[k+1], x_temp)[-1]]).tolist()
-        # print(new_yk)
         y = y.tolist() + new_yk
         y = np.asarray(y)
-        # print("new list", y)
         k += 1
     print("latest k = ", k)
     return y
 
 
 fig, ax = plt.subplots()
-amount_of_points = 101
-size_of_y = 300
+amount_of_points = 1001
+size_of_y = 10
 f = new_f(size_of_y)
 x_min = 0
 # x_max = 10**15
@@ -57,26 +54,25 @@ x_max = 10
 x = np.linspace(x_min, x_max, amount_of_points)
 h = (x_max - x_min)/(amount_of_points-1)
 y0 = 7.5
-print("X[] = ", x)
+# print("X[] = ", x)
 y_initial_values = np.zeros([size_of_y])
 y_initial_values[0] = 7.5
 x_initial_values_for_bdf = x[:4]
 y_initial_values_for_bdf = odeint(f, y_initial_values, x_initial_values_for_bdf)
 x_initial_values_for_bdf = x[:4]
-print("Y INITIAL VALUES:", y_initial_values_for_bdf)
-print("X INITIAL VALUES:", x_initial_values_for_bdf)
+# print("Y INITIAL VALUES:", y_initial_values_for_bdf)
+# print("X INITIAL VALUES:", x_initial_values_for_bdf)
 y_solution = odeint(f, y_initial_values, x)
 y_bdf_solution = backward_differentiation_formula(y_initial_values_for_bdf)
-# y_solution = odeint(f, [7.5, 0, 0, 0, 0, 0, 0], x)
-print("Exact solution by scipy.odeint(): ", y_solution)
-print("BDF solution : ", y_bdf_solution)
+# print("Exact solution by scipy.odeint(): ", y_solution)
+# print("BDF solution : ", y_bdf_solution)
 y1 = np.zeros_like(x)
 for i in range(0, amount_of_points):
-    y1[i]=y_solution[i][0]
-ax.plot(x, y_solution, color='brown', label='Exact solution')
-ax.plot(x, y_bdf_solution, color='green', label='BDF solution')
+    y1[i] = y_solution[i][0]
+ax.plot(x, y_solution, color='brown')
+ax.plot(x, y_bdf_solution, color='green')
 plt.grid()
-plt.legend(loc='best');
+# plt.legend(loc='best')
 plt.show()
 print("Right-hand-parts: ", f)
 

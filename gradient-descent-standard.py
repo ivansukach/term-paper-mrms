@@ -101,7 +101,7 @@ while normK(point[-2] - point[-1]) > eps:
     if len(norms_dif) == 20:
         break
 
-print("points: ", point)
+print("points: ", np.asarray(point))
 print("amount of iterations: ", len(point)-1)
 print("minimum of minimizedFunc: ", minimizedFunction(point[-1]))
 
