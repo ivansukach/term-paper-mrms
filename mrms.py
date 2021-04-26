@@ -55,7 +55,7 @@ def residual(_x):
 
 def normOfResidual(_residual):
     _sum = ""
-    for i in range(0, len(_residual)):
+    for i in range(0, size_of_y):
         _sum += "(" + str(_residual[i])+")**2"
         if i != len(_residual)-1:
             _sum += "+"
@@ -65,7 +65,8 @@ def normOfResidual(_residual):
 def x_template(_k):
     s_template = ""
     for j in range(0, _k):
-        s_template += "beta"+str(j)+"*tau*f(y"+str(j+step)+", t"+str(j+step)+")-alpha"+str(j)+"*y"+str(j+step)+""
+        s_template += "beta"+str(j)+"*tau*f(y"+str(j+step)+", t"+str(j+step)+")-alpha"+str(j)+"*y"+str(j+step)+" "
+        # s_template += "tau*f(y" + str(j + step) + ", t" + str(j + step) + ")-y" + str(j + step)
         if j != _k-1:
             s_template += '+'
     return s_template
