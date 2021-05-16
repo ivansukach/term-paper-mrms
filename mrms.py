@@ -17,7 +17,7 @@ def new_f(n):
             if i == 0:
                 s = 0
                 s -= 2*jk(_y, 0)
-                for j in range(1, n-2):
+                for j in range(1, n-1):
                     s -= jk(_y, j)
                 rhp[0] = s
             elif i == n-1:
@@ -29,15 +29,12 @@ def new_f(n):
 
 
 amount_of_points = 7
-size_of_y = 4
-c = [-1 / 3, 3 / 2, -3, 11 / 6]
-k = 3
-p = 3
+size_of_y = 3
+c = [-1, 1]
+k = 1
+p = 1
 f = new_f(size_of_y)
-y = [[7.5, 0, 0, 0],
- [1.52978522, 0.86092722, 0.73196761, 0.6841525],
- [1.52978522, 0.86092722, 0.73196761, 0.6841525],
- [1.52978522, 0.86092722, 0.73196761, 0.6841525]]
+y = [[7.5, 0, 0]]
 t_min = 0
 t_max = 1
 t = np.linspace(t_min, t_max, amount_of_points)
@@ -47,9 +44,9 @@ tau = (t_max - t_min) / (amount_of_points - 1)
 step = 0
 
 def residual(_x):
-    s = tau * f(_x, t[k + step - 1]) - c[k] * _x
+    s = tau * f(_x, t[k + step - 1]) - c[p] * _x
     for i in range(1, p+1):
-        s -= c[k - i] * np.asarray(y[k + step - i])
+        s -= c[p - i] * np.asarray(y[p + step - i])
     return s
 
 
@@ -159,7 +156,7 @@ while step < amount_of_points-4:
         exec("alpha" + str(j) + " = sp.Symbol('alpha" + str(j) + "')")
         exec("beta" + str(j) + " = sp.Symbol('beta" + str(j) + "')")
     normOfR = eval("lambda ab: normOfResidual(residual(" + r_template_str + "))")
-    alphaAndBeta = [np.array([1, 1, 1, 1, 1, 1]), grad_step(np.array([1, 1, 1, 1, 1, 1]))]
+    alphaAndBeta = [np.array([1, 1]), grad_step(np.array([1, 1]))]
     norms_dif = []
     v = V()
     norm_dif = norm(alphaAndBeta[-2].dot(v) - alphaAndBeta[-1].dot(v))
