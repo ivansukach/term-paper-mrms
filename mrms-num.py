@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import leastsq, least_squares
+from scipy.integrate import solve_ivp
 import math
 
 
@@ -7,67 +8,41 @@ def jk(_y, _k):
     return _y[0] * _y[_k - 1] - math.exp(math.pow(_k, 2 / 3) - math.pow((_k - 1), 2 / 3)) * _y[_k]
 
 
-def new_f(n):
-    def _f(_y, _x):
-        rhp = np.zeros_like(_y)
-        for i in range(0, n):
-            if i == 0:
-                s = 0
-                s -= 2 * jk(_y, 1)
-                for j in range(1, n - 1):
-                    s -= jk(_y, j + 1)
-                rhp[0] = s
-            elif i == n - 1:
-                rhp[n - 1] = jk(_y, n - 1)
-            else:
-                rhp[i] = jk(_y, i) - jk(_y, i + 1)
-        return rhp
-
-    return _f
-
-
-amount_of_points = 7
-size_of_y = 3
-eps = 0.001
-c = [-1, 1]
-k = 1
-p = 1
-f = new_f(size_of_y)
-y = [[7.5, 0, 0]]
-t_min = 0
-t_max = 1
-t = np.linspace(t_min, t_max, amount_of_points)
-tau = (t_max - t_min) / (amount_of_points - 1)
-I = np.zeros((size_of_y, size_of_y))
-for _i in range(0, size_of_y):
-    I[_i][_i] = 1
+def f(_y, _t):
+    n = len(_y)
+    rhp = np.zeros_like(_y)
+    for i in range(0, n):
+        if i == 0:
+            s = 0
+            s -= 2 * jk(_y, 1)
+            for j in range(1, n - 1):
+                s -= jk(_y, j + 1)
+            rhp[0] = s
+        elif i == n - 1:
+            rhp[n - 1] = jk(_y, n - 1)
+        else:
+            rhp[i] = jk(_y, i) - jk(_y, i + 1)
+    return rhp
 
 
 def g_const():
     s = np.zeros(size_of_y)
     for i in range(1, p + 1):
-        s += c[k - i] * np.array(y[k - i])
+        s += c[p - i] * np.array(y[-i])
     return s
 
 
-g = g_const()
-
-
 def residual(_x):
-    return tau * f(_x, t[k]) - c[k] * _x - g
+    return tau * f(_x, t[-1]+tau) - c[p] * _x - g
 
 
 def v_transpose():
     _v = []
     for i in range(0, k):
-        _v.append(-1 * np.asarray(y[i]))
+        _v.append(-1 * np.asarray(y[-(k-i)]))
     for m in range(0, k):
-        _v.append(tau * f(y[m], t[m]))
+        _v.append(tau * f(y[-(k-m)], t[-(k-m)]))
     return np.asarray(_v)
-
-
-v_transposed = v_transpose()
-v = v_transposed.transpose()
 
 
 def dfi_dyj(i, j, _x):
@@ -139,7 +114,39 @@ def jacobi_matrix(_gamma):
     return m_jacobi_t
 
 
-gamma = np.array([1, 1])
+def residual_by_gamma(_gamma):
+    _x = v.dot(_gamma)
+    return residual(_x)
+
+
+def norm_of_residual_by_gamma(_gamma):
+    _residual = residual_by_gamma(_gamma)
+    _sum = 0
+    for i in range(0, size_of_y):
+        _sum += _residual[i] ** 2
+    return _sum
+
+
+amount_of_points = 7
+size_of_y = 3
+eps = 0.001
+c = [1/2, -2, 3/2]
+k = 3
+p = 2
+# f = new_f(size_of_y)
+y = [[19.0, 0, 0], [1.89999278e+01, 3.60997023e-05, 5.78811505e-11], [1.89998556e+01, 7.21988093e-05, 2.31521778e-10]]
+t_min = 0
+t_max = 0.0001
+t = [t_min, 0.0000001, 0.0000002]
+# tau = (t_max - t_min) / (amount_of_points - 1)
+tau = 0.0000001
+I = np.zeros((size_of_y, size_of_y))
+for _i in range(0, size_of_y):
+    I[_i][_i] = 1
+g = g_const()
+v_transposed = v_transpose()
+v = v_transposed.transpose()
+gamma = np.array([1, 1, 1, 1, 1, 1])
 print("V: ", v)
 x = v.dot(gamma)
 print("RESIDUAL: ", residual(x))
@@ -153,17 +160,6 @@ print("GRADIENT: ", gradient)
 #
 # #print(least_squares(func, x0=np.array([0, 0])))
 # print(leastsq(func, x0=np.array([0, 0])))
-def residual_by_gamma(_gamma):
-    _x = v.dot(_gamma)
-    return residual(_x)
-
-
-def norm_of_residual_by_gamma(_gamma):
-    _residual = residual_by_gamma(_gamma)
-    _sum = 0
-    for i in range(0, size_of_y):
-        _sum += _residual[i] ** 2
-    return _sum
 
 
 print("NORM OF RESIDUAL: ", norm_of_residual_by_gamma(gamma))
@@ -210,10 +206,28 @@ print("NORM OF RESIDUAL: ", norm_of_residual_by_gamma(gamma))
 # print("RESIDUAL3:", residual_by_gamma(gamma3_exact))
 # print("NORM OF RESIDUAL3:", norm_of_residual_by_gamma(gamma3_exact))
 
-gamma_tmp = least_squares(norm_of_residual_by_gamma, gamma).x
-r_norm = norm_of_residual_by_gamma(gamma_tmp)
-while r_norm > eps:
-    tau = tau / math.sqrt(r_norm / eps)
-    gamma_tmp = least_squares(norm_of_residual_by_gamma, gamma).x
+# print(y[0])
+# sol = solve_ivp(f, [t_min, t_max], np.array(y[0]))
+# print(sol)
+
+while t[-1] < t_max:
+    gamma_tmp = least_squares(residual_by_gamma, gamma).x
     r_norm = norm_of_residual_by_gamma(gamma_tmp)
-tau = tau * math.sqrt(r_norm / eps)
+    while r_norm > eps:
+        # tau = tau / math.sqrt(r_norm / eps)
+        # tau = tau * eps / r_norm
+        # tau = tau / math.sqrt(r_norm / eps)
+        gamma_tmp = least_squares(norm_of_residual_by_gamma, gamma).x
+        r_norm = norm_of_residual_by_gamma(gamma_tmp)
+    # g = g_const()
+    t.append(t[-1]+tau)
+    y.append(v.dot(gamma_tmp))
+    g = g_const()
+    v_transposed = v_transpose()
+    v = v_transposed.transpose()
+    # tau = tau * eps / r_norm
+    # tau = tau / math.sqrt(r_norm / eps)
+
+
+print("Y:", y[-1])
+print("T: ", t[-1])
