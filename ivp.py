@@ -25,9 +25,9 @@ def f(_t, _y):
     return rhp
 
 
-y = [[19.0, 0, 0]]
+y = [[19.0, 0, 0, 0, 0, 0, 0]]
 t_min = 0
-t_max = 0.0000002
+t_max = 0.0001
 
 print(y[0])
 solution = solve_ivp(f, [t_min, t_max], np.array(y[0]), method='BDF', dense_output=True)
