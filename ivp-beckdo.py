@@ -25,12 +25,20 @@ def f(_t, _y):
     return rhp
 
 
-y = [[19.0, 0, 0, 0, 0, 0, 0]]
+y = [[8.0, 0, 0, 0, 0, 0, 0, 0]]
 t_min = 0
-t_max = 0.0001
+t_max = 0.01
 
 print(y[0])
 solution = solve_ivp(f, [t_min, t_max], np.array(y[0]), method='BDF', dense_output=True)
 print(solution)
 # print(sol.y[0][5]+sol.y[1][5]+sol.y[2][5])
 print(solution.sol(t_max))
+y_last = solution.sol(t_max)
+_s = 0
+for i in range(0, len(y[0])):
+    _s += y_last[i]
+print("Sum: ", _s)
+# print("T: ", solution.t)
+for i in range(0, len(solution.t)):
+    print("T: ", solution.t[i], " Y: ", (solution.y.transpose())[i])
