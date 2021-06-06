@@ -102,9 +102,9 @@ def f_gradient(_x):
 
 
 def transposed_jacobi_matrix(_x):
-    print("transposed_f_gradient: ", transposed_f_gradient(_x))
+    # print("transposed_f_gradient: ", transposed_f_gradient(_x))
     m_jacobi_t = v_transposed.dot(tau * transposed_f_gradient(_x) - I)
-    print("TRANSPOSED JACOBI MATRIX: ", m_jacobi_t)
+    # print("TRANSPOSED JACOBI MATRIX: ", m_jacobi_t)
     return m_jacobi_t
 
 
@@ -146,55 +146,47 @@ y0 = [7.5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-t_min = 0
-t_max = 1
-bdf_solution = solve_ivp(f, [t_min, t_max], np.array(y0), method='BDF', dense_output=True)
-y_bdf_sol = bdf_solution.y.transpose()
 size_of_y = 100
 eps = 0.001
-c = [-1/3, 1.5, -3, 11/6]
-k = 3
-p = 3
-y = [y0, y_bdf_sol[1], y_bdf_sol[2]]
-t = [t_min, bdf_solution.t[1], bdf_solution.t[2]]
-# tau = (t_max - t_min) / (amount_of_points - 1)
-tau = bdf_solution.t[2] - bdf_solution.t[1]
+c = [1/2, -2, 3/2]
+k = 2
+p = 2
+t_min = 0
+t_max = 1
+t_size = 201
+bdf_solution = solve_ivp(f, [t_min, t_max], np.array(y0), method='BDF', dense_output=True, rtol=1e-13, atol=1e-13)
+tau = (t_max - t_min) / (t_size-1)
+t = [t_min, t_min+tau]
+y = [y0, bdf_solution.sol(t[1])]
+
 I = np.zeros((size_of_y, size_of_y))
 for _i in range(0, size_of_y):
     I[_i][_i] = 1
 g = g_const()
 v_transposed = v_transpose()
 v = v_transposed.transpose()
-gamma = np.array([1, 1, 1, 1, 1, 1])
-print("V: ", v)
+gamma = np.array([1, 1, 1, 1])
+# print("V: ", v)
 x = v.dot(gamma)
-print("RESIDUAL: ", residual(x))
+# print("RESIDUAL: ", residual(x))
 gradient = 2 * transposed_jacobi_matrix(x).dot(residual(x))
-print("GRADIENT: ", gradient)
-print("NORM OF RESIDUAL: ", norm_of_residual_by_gamma(gamma))
+# print("GRADIENT: ", gradient)
+# print("NORM OF RESIDUAL: ", norm_of_residual_by_gamma(gamma))
 counter = 0
 
-while t[-1] < t_max:
-    gamma_tmp = least_squares(residual_by_gamma, gamma, jac=jacobi_matrix, xtol=3e-16).x
-    r_norm = norm_of_residual_by_gamma(gamma_tmp)
-    # bounds_min = gamma_tmp1 - 1e-3
-    # # bounds_max = gamma_tmp + 1e-3
-    # gamma_tmp = least_squares(residual_by_gamma, bounds_min, jac=jacobi_matrix).x
-    # r_norm2 = norm_of_residual_by_gamma(gamma_tmp)
-    # if r_norm2 > r_norm:
-    #     gamma_tmp = gamma_tmp1
-    #     counter += 1
-
-
-    # while r_norm > eps:
-    #     # tau = tau / math.sqrt(r_norm / eps)
-    #     # tau = tau * eps / r_norm
-    #     # tau = tau / math.sqrt(r_norm / eps)
-    #     gamma_tmp = least_squares(norm_of_residual_by_gamma, gamma).x
-    #     r_norm = norm_of_residual_by_gamma(gamma_tmp)
-    if r_norm > eps:
-        print("BIG RESIDUAL")
-        sys.exit()
+for i in range(0, t_size-k):
+    gamma_tmp1 = least_squares(residual_by_gamma, gamma, jac=jacobi_matrix, xtol=3e-16).x
+    r_norm = norm_of_residual_by_gamma(gamma_tmp1)
+    bounds_min = gamma_tmp1 - 1e-3
+    # bounds_max = gamma_tmp + 1e-3
+    gamma_tmp = least_squares(residual_by_gamma, bounds_min, jac=jacobi_matrix).x
+    r_norm2 = norm_of_residual_by_gamma(gamma_tmp)
+    if r_norm2 > r_norm:
+        gamma_tmp = gamma_tmp1
+        counter += 1
+    # if r_norm > eps:
+        # print("BIG RESIDUAL")
+        # sys.exit()
     t.append(t[-1]+tau)
     y.append(v.dot(gamma_tmp))
     g = g_const()
@@ -210,27 +202,18 @@ for i in range(0, size_of_y):
     _s += y[-1][i]
 print("Sum: ", _s)
 print("T: ", t[-1])
-print(str(len(t)) + " iterations")
-# for i in range(0, len(t)):
-#     print("T: ", t[i], " Y: ", y[i])
-#
-# print("")
-# print("")
-# print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-# print("")
-# print("")
-#
-# # bdf_solution = solve_ivp(f, [t_min, t_max], np.array(y[0]), method='BDF', dense_output=True)
+print("Gamma recalculation turned out to be useless " + str(counter) + " times")
+
+
+bdf_solution = solve_ivp(f, [t_min, t_max], np.array(y[0]), method='BDF', dense_output=True)
 y_diff_norms = []
-tau_eps = (t[1] - t[0])/100
-for i in range(0, len(bdf_solution.t)):
-    for j in range(0, len(t)):
-        if math.fabs(bdf_solution.t[i] - t[j]) < tau_eps:
-            y_diff_norms.append(norm(y_bdf_sol[i]-y[j]))
-            break
+for i in range(0, t_size):
+    tmp_bdf_sol = bdf_solution.sol(t[i])
+    y_diff_norms.append(norm(tmp_bdf_sol-y[i]))
 
 fig, ax = plt.subplots()
-ax.plot(bdf_solution.t, y_diff_norms, color='brown')
+ax.plot(t, y_diff_norms, color='brown')
+print("Max norm of error: "+str(max(y_diff_norms))+" N="+str(t_size-1) + " k=" + str(k) + " p=" + str(p))
 plt.grid()
 plt.legend(loc='best')
 plt.show()

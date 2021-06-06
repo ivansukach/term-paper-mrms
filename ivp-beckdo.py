@@ -38,7 +38,9 @@ y_last = solution.sol(t_max)
 _s = 0
 for i in range(0, len(y[0])):
     _s += y_last[i]
-print("Sum: ", _s)
-# print("T: ", solution.t)
-for i in range(0, len(solution.t)):
-    print("T: ", solution.t[i], " Y: ", (solution.y.transpose())[i])
+print("y0:", solution.y[0])
+print("y1:", solution.y[1])
+# print("Sum: ", _s)
+# # print("T: ", solution.t)
+# for i in range(0, len(solution.t)):
+#     print("T: ", solution.t[i], " Y: ", (solution.y.transpose())[i])
