@@ -177,21 +177,6 @@ counter = 0
 while t[-1] < t_max:
     gamma_tmp = least_squares(residual_by_gamma, gamma, jac=jacobi_matrix, xtol=3e-16).x
     r_norm = norm_of_residual_by_gamma(gamma_tmp)
-    # bounds_min = gamma_tmp1 - 1e-3
-    # # bounds_max = gamma_tmp + 1e-3
-    # gamma_tmp = least_squares(residual_by_gamma, bounds_min, jac=jacobi_matrix).x
-    # r_norm2 = norm_of_residual_by_gamma(gamma_tmp)
-    # if r_norm2 > r_norm:
-    #     gamma_tmp = gamma_tmp1
-    #     counter += 1
-
-
-    # while r_norm > eps:
-    #     # tau = tau / math.sqrt(r_norm / eps)
-    #     # tau = tau * eps / r_norm
-    #     # tau = tau / math.sqrt(r_norm / eps)
-    #     gamma_tmp = least_squares(norm_of_residual_by_gamma, gamma).x
-    #     r_norm = norm_of_residual_by_gamma(gamma_tmp)
     if r_norm > eps:
         print("BIG RESIDUAL")
         sys.exit()
@@ -200,8 +185,6 @@ while t[-1] < t_max:
     g = g_const()
     v_transposed = v_transpose()
     v = v_transposed.transpose()
-    # tau = tau * eps / r_norm
-    # tau = tau / math.sqrt(r_norm / eps)
 
 
 print("Y:", y[-1])
@@ -211,16 +194,6 @@ for i in range(0, size_of_y):
 print("Sum: ", _s)
 print("T: ", t[-1])
 print(str(len(t)) + " iterations")
-# for i in range(0, len(t)):
-#     print("T: ", t[i], " Y: ", y[i])
-#
-# print("")
-# print("")
-# print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-# print("")
-# print("")
-#
-# # bdf_solution = solve_ivp(f, [t_min, t_max], np.array(y[0]), method='BDF', dense_output=True)
 y_diff_norms = []
 tau_eps = (t[1] - t[0])/100
 for i in range(0, len(bdf_solution.t)):

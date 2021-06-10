@@ -1,29 +1,20 @@
 import numpy as np
-from scipy.optimize import leastsq, least_squares
+from scipy.optimize import least_squares
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp
-import math
 import sys
-
-
-def jk(_y, _k):
-    return _y[0] * _y[_k - 1] - math.exp(math.pow(_k, 2 / 3) - math.pow((_k - 1), 2 / 3)) * _y[_k]
+from scipy.integrate import solve_ivp
 
 
 def f(_t, _y):
-    n = len(_y)
     rhp = np.zeros_like(_y)
-    for i in range(0, n):
-        if i == 0:
-            s = 0
-            s -= 2 * jk(_y, 1)
-            for j in range(1, n - 1):
-                s -= jk(_y, j + 1)
-            rhp[0] = s
-        elif i == n - 1:
-            rhp[n - 1] = jk(_y, n - 1)
-        else:
-            rhp[i] = jk(_y, i) - jk(_y, i + 1)
+    rhp[0] = -1.71 * _y[0] + 0.43 * _y[1] + 8.32 * _y[2] + 0.0007
+    rhp[1] = 1.71 * _y[0] - 8.75 * _y[1]
+    rhp[2] = -10.03 * _y[2] + 0.43 * _y[3] + 0.035 * _y[4]
+    rhp[3] = 8.32 * _y[1] + 1.71 * _y[2] - 1.12 * _y[3]
+    rhp[4] = -1.745 * _y[4] + 0.43 * _y[5] + 0.43 * _y[6]
+    rhp[5] = -280 * _y[5] * _y[7] + 0.69 * _y[3] + 1.71 * _y[4] - 0.43 * _y[5] + 0.69 * _y[6]
+    rhp[6] = 280 * _y[5] * _y[7] - 1.81 * _y[6]
+    rhp[7] = - rhp[6]
     return rhp
 
 
@@ -50,37 +41,76 @@ def v_transpose():
 def dfi_dyj(i, j, _x):
     if i == 0:
         if j == 0:
-            s = 0
-            for _k in range(1, size_of_y):
-                s += _x[_k]
-            return -4 * _x[0] - s
+            return -1.71
         if j == 1:
-            return 2 * math.exp(1) - _x[0]
-        if j == size_of_y - 1:
-            return math.exp(math.pow(size_of_y - 1, 2 / 3) - math.pow(size_of_y - 2, 2 / 3))
-        else:
-            return -_x[0] + math.exp(math.pow(j, 2 / 3) - math.pow(j - 1, 2 / 3))
-    if i == size_of_y - 1:
-        if j == 0:
-            return _x[i - 1]
-        if j == size_of_y - 2:
-            return _x[0]
-        if j == size_of_y - 1:
-            return -math.exp(math.pow(size_of_y - 1, 2 / 3) - math.pow(size_of_y - 2, 2 / 3))
+            return 0.43
+        if j == 2:
+            return 8.32
         else:
             return 0
-    else:
+    if i == 1:
         if j == 0:
-            if i == 1:
-                return 2 * _x[0] - _x[1]
-            else:
-                return _x[i - 1] - _x[i]
-        if j == i - 1:
-            return _x[0]
-        if j == i:
-            return -math.exp(math.pow(j, 2 / 3) - math.pow(j - 1, 2 / 3)) - _x[0]
-        if j == i + 1:
-            return math.exp(math.pow(i + 1, 2 / 3) - math.pow(i, 2 / 3))
+            return 1.71
+        if j == 1:
+            return -8.75
+        else:
+            return 0
+    if i == 2:
+        if j == 2:
+            return -10.03
+        if j == 3:
+            return 0.43
+        if j == 4:
+            return 0.035
+        else:
+            return 0
+    if i == 3:
+        if j == 1:
+            return 8.32
+        if j == 2:
+            return 1.71
+        if j == 3:
+            return -1.12
+        else:
+            return 0
+    if i == 4:
+        if j == 4:
+            return -1.745
+        if j == 5:
+            return 0.43
+        if j == 6:
+            return 0.43
+        else:
+            return 0
+    if i == 5:
+        if j == 3:
+            return 0.69
+        if j == 4:
+            return 1.71
+        if j == 5:
+            return -0.43 - 280 * _x[7]
+        if j == 6:
+            return 0.69
+        if j == 7:
+            return -280 * _x[5]
+        else:
+            return 0
+    if i == 6:
+        if j == 5:
+            return 280 * _x[7]
+        if j == 6:
+            return -1.81
+        if j == 7:
+            return 280 * _x[5]
+        else:
+            return 0
+    if i == 7:
+        if j == 5:
+            return -280 * _x[7]
+        if j == 6:
+            return 1.81
+        if j == 7:
+            return -280 * _x[5]
         else:
             return 0
 
@@ -102,9 +132,9 @@ def f_gradient(_x):
 
 
 def transposed_jacobi_matrix(_x):
-    # print("transposed_f_gradient: ", transposed_f_gradient(_x))
+    print("transposed_f_gradient: ", transposed_f_gradient(_x))
     m_jacobi_t = v_transposed.dot(tau * transposed_f_gradient(_x) - I)
-    # print("TRANSPOSED JACOBI MATRIX: ", m_jacobi_t)
+    print("TRANSPOSED JACOBI MATRIX: ", m_jacobi_t)
     return m_jacobi_t
 
 
@@ -136,21 +166,12 @@ def norm(_y_diff):
     return _sum
 
 
-y0 = [7.5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-size_of_y = 100
 eps = 0.001
 c = [1/2, -2, 3/2]
 k = 2
 p = 2
+y0 = [1.0, 0, 0, 0, 0, 0, 0, 0.0057]
+size_of_y = len(y0)
 t_min = 0
 t_max = 1
 t_size = 201
@@ -169,8 +190,9 @@ gamma = np.array([1, 1, 1, 1])
 x = v.dot(gamma)
 gradient = 2 * transposed_jacobi_matrix(x).dot(residual(x))
 
+
 for i in range(0, t_size-k):
-    gamma_tmp = least_squares(residual_by_gamma, gamma, jac=jacobi_matrix, xtol=3e-16).x
+    gamma_tmp = least_squares(residual_by_gamma, gamma, jac=jacobi_matrix).x
     r_norm = norm_of_residual_by_gamma(gamma_tmp)
     if r_norm > eps:
         print("BIG RESIDUAL")
